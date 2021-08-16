@@ -39,9 +39,23 @@ jobs:
         run: |
           git flow support start ${{ github.event.inputs.version }} ${{ github.event.inputs.base }}
 
+      - name: Extract commit sha
+        id: vars
+        shell: bash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"     
+
+      - name: Bump package.json version to prerelease
+        run: |
+          npm version --allow-same-version --git-tag-version=false ${{ github.event.inputs.version }}+${{ steps.vars.outputs.sha_short }}
+
+      - name: Commit changes
+        run: |
+          git commit -a -m "ci: version bump to ${{ github.event.inputs.version }}+${{ steps.vars.outputs.sha_short }}"
+
       - name: Support publish
         run: |
-          git push --no-verify
+          git push --no-verify --set-upstream origin support/${{ github.event.inputs.version }}
 
       - name: Event toJSON
         run: |
