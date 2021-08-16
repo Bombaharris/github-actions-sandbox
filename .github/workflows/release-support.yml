@@ -46,12 +46,14 @@ jobs:
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"     
 
       - name: Bump package.json version to prerelease
+        id: bump
+        shell: bash
         run: |
-          npm version --allow-same-version --git-tag-version=false ${{ github.event.inputs.version }}+${{ steps.vars.outputs.sha_short }}
-
+          echo "::set-output name=version::$(npm version prerelease--git-tag-version=false --preid=${{ steps.vars.outputs.sha_short }})"    
+          
       - name: Commit changes
         run: |
-          git commit -a -m "ci: version bump to ${{ github.event.inputs.version }}+${{ steps.vars.outputs.sha_short }}"
+          git commit -a -m "ci: version bump to ${{ steps.bump.outputs.version }}"
 
       - name: Support publish
         run: |
