@@ -37,7 +37,7 @@ jobs:
 
       - name: Release support
         run: |
-          git flow release support ${{ github.event.inputs.version }} ${{ github.event.inputs.base }}
+          git flow support start ${{ github.event.inputs.version }} ${{ github.event.inputs.base }}
 
       - name: Support publish
         run: |
