@@ -13,7 +13,10 @@ jobs:
 
       - name: Validate input
         if: ${{ !startsWith(github.event.inputs.version, 'v') }}
-        run: exit 1
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('Version must start with v!')
 
       - name: Install dependencies
         run: |
