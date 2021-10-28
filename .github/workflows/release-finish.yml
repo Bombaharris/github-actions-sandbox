@@ -11,6 +11,10 @@ jobs:
     steps:
       - run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
 
+      - name: Validate input
+        if: ${{ !startsWith(github.event.inputs.version, 'v') }}
+        run: exit 1
+
       - name: Install dependencies
         run: |
           sudo apt-get -y install git-flow
