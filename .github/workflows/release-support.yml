@@ -1,0 +1,64 @@
+name: Release support start
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to support"
+        required: true
+      base:
+        description: "Base i.e. commit sha or tag name"
+        required: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y install git-flow
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SUPER_AUTH_TOKEN }}
+
+      - name: Initialize mandatory git config
+        run: |
+          git config user.name "Release manager"
+          git config user.email noreply@github.com
+
+      - name: Init git flow
+        run: |
+          git checkout master
+          git checkout develop
+          git flow init -d
+
+      - name: Release support
+        run: |
+          git flow support start ${{ github.event.inputs.version }} ${{ github.event.inputs.base }}
+
+      - name: Extract commit sha
+        id: vars
+        shell: bash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"     
+
+      - name: Bump package.json version to prerelease
+        id: bump
+        shell: bash
+        run: |
+          echo "::set-output name=version::$(npm version prerelease--git-tag-version=false --preid=${{ steps.vars.outputs.sha_short }})"    
+          
+      - name: Commit changes
+        run: |
+          git commit -a -m "ci: version bump to ${{ steps.bump.outputs.version }}"
+
+      - name: Support publish
+        run: |
+          git push --no-verify --set-upstream origin support/${{ github.event.inputs.version }}
+
+      - name: Event toJSON
+        run: |
+          echo "${{ toJSON(github.event) }}"
