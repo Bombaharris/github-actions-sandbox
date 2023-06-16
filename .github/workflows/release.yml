@@ -47,14 +47,6 @@ jobs:
         run: |
           git flow release start ${{ github.event.inputs.version }}
 
-      - name: Bump package.json version
-        run: |
-          npm version --git-tag-version=false ${{ github.event.inputs.version }}
-
-      - name: Commit changes
-        run: |
-          git commit -a -m "chore: release version ${{ github.event.inputs.version }}"
-
       - name: Release publish
         run: |
           git flow release publish
@@ -70,3 +62,18 @@ jobs:
       - name: Checkout tag
         run: |
           git checkout ${{ github.event.inputs.version }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: ${{ github.event.inputs.version }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
