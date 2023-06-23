@@ -1,0 +1,54 @@
+name: Deploy
+on:
+  release:
+    types: [created]
+  push:
+      branches:
+        - develop
+
+env:
+  DEPLOY_URL: 'https://qa10-digitalhub.cytivalifesciences.io/'
+  APP_NAME: ps-header
+  AZURE_BLOB_STORAGE_NAME: ps-header
+  AZURE_ASSETS_BLOB_STORAGE_NAME: $web
+  # NODE_VERSION: '16.13'
+  GH_REF: ${{ github.event.release.tag_name || github.sha }}
+  NODE_AUTH_TOKEN: ${{ secrets.AUTH_TOKEN_CYTIVA }}
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-all:
+    strategy:
+      matrix:
+        env: [DEV, STAGE]
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ matrix.env }}
+
+    steps:
+        - run: |
+            echo "${{ matrix.env }}"
+
+  deploy-all:
+    strategy:
+      matrix:
+        env: [DEV, STAGE]
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ matrix.env }}
+
+    steps:
+        - run: |
+            echo "${{ matrix.configs }}"
+            echo "${{ vars.NODE_VERSION }}"
+            echo "${{ vars.MY_TEST }}"
+            echo "${{ toJson(env)}}"
+            echo "${{ toJson(vars)}}"
+            echo "${{ toJson(secrets) }}"
+            echo "${{ toJson(endsWith(secrets.TEST_TOKEN, 'WOW'))}}"
